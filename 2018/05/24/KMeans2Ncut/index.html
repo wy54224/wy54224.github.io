@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.5.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: true,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="1.k-means    k-means是我们常用的聚类算法之一。假设对于一个数据集，有\(\mathrm{n}\)个点需要我们分成\(\mathrm{k}\)类，每个点有\(\mathrm{d}\)个特征，那么用矩阵分解的形式表示k-means的目标方程为：">
+<meta name="keywords" content="k-means,谱聚类">
+<meta property="og:type" content="article">
+<meta property="og:title" content="从KMeans到Ncut">
+<meta property="og:url" content="https:&#x2F;&#x2F;wy54224.github.io&#x2F;2018&#x2F;05&#x2F;24&#x2F;KMeans2Ncut&#x2F;index.html">
+<meta property="og:site_name" content="wavy的流动小屋">
+<meta property="og:description" content="1.k-means    k-means是我们常用的聚类算法之一。假设对于一个数据集，有\(\mathrm{n}\)个点需要我们分成\(\mathrm{k}\)类，每个点有\(\mathrm{d}\)个特征，那么用矩阵分解的形式表示k-means的目标方程为：">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https:&#x2F;&#x2F;wy54224.github.io&#x2F;.io&#x2F;&#x2F;kmeans.png">
+<meta property="og:image" content="https:&#x2F;&#x2F;wy54224.github.io&#x2F;.io&#x2F;&#x2F;Ncut.png">
+<meta property="og:image" content="https:&#x2F;&#x2F;wy54224.github.io&#x2F;.io&#x2F;&#x2F;kernelkmeans.png">
+<meta property="og:image" content="https:&#x2F;&#x2F;wy54224.github.io&#x2F;.io&#x2F;&#x2F;kernelkmeans2.png">
+<meta property="og:updated_time" content="2019-11-21T07:33:17.812Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https:&#x2F;&#x2F;wy54224.github.io&#x2F;.io&#x2F;&#x2F;kmeans.png">
+
+<link rel="canonical" href="https://wy54224.github.io/2018/05/24/KMeans2Ncut/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>从KMeans到Ncut | wavy的流动小屋</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">wavy的流动小屋</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">学习永不止境</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wy54224.github.io/2018/05/24/KMeans2Ncut/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="wy54224">
+      <meta itemprop="description" content="个人学习笔记记录">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="wavy的流动小屋">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          从KMeans到Ncut
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-05-24 13:42:47" itemprop="dateCreated datePublished" datetime="2018-05-24T13:42:47+08:00">2018-05-24</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-11-21 15:33:17" itemprop="dateModified" datetime="2019-11-21T15:33:17+08:00">2019-11-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/machinglearning/" itemprop="url" rel="index">
+                    <span itemprop="name">machinglearning</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="k-means">1.k-means</h2>
+<p>   k-means是我们常用的聚类算法之一。假设对于一个数据集，有<span class="math inline">\(\mathrm{n}\)</span>个点需要我们分成<span class="math inline">\(\mathrm{k}\)</span>类，每个点有<span class="math inline">\(\mathrm{d}\)</span>个特征，那么用矩阵分解的形式表示k-means的目标方程为： <a id="more"></a> <span class="math display">\[\min\limits_{\mathbf{G},\mathbf{F}}\|\mathbf{X}^T-\mathbf{GF}^T\|_F^2 \quad s.t.\mathbf{G}_{i,k}\in\{0, 1\},\sum_{k=1}^K\mathbf{G}_{i,k}=1,\forall i=1,2,\dots,\mathrm{n}\]</span> 其中，<span class="math inline">\(\mathbf{X}\in \mathbb{R}^{\mathrm{d}\times\mathrm{n}}\)</span>，即 <span class="math inline">\(\mathbf{X}\)</span> 的一个列向量对应一个数据点；<span class="math inline">\(\mathbf{G}\in\mathbb{R}^{\mathrm{n}\times\mathrm{k}}\)</span>，为指示矩阵，如果点 <span class="math inline">\(\mathbf{X}_i\)</span> 属于类<span class="math inline">\(\mathrm{k}\)</span>，则<span class="math inline">\(\mathbf{G}_{i,k}=1\)</span>，否则为<span class="math inline">\(0\)</span>；<span class="math inline">\(\mathbf{F}\in\mathbb{R}^{\mathrm{d}\times\mathrm{k}}\)</span>，为质心点矩阵，表示每个聚类的中心点。如果没有特殊说明，对于矩阵<span class="math inline">\(\mathbf{A}\)</span>，<span class="math inline">\(\mathbf{A}_i\)</span> 表示 <span class="math inline">\(\mathbf{A}\)</span>的第<span class="math inline">\(i\)</span>列，而<span class="math inline">\(\mathbf{A}^i\)</span>表示<span class="math inline">\(\mathbf{A}\)</span>的第<span class="math inline">\(i\)</span>行。这里给出了一个标准k-means的分类结果： <img src="/.io//kmeans.png" alt="k-means聚类"></p>
+<h2 id="谱聚类">2.谱聚类</h2>
+<p>  谱聚类也是一种比较常用的聚类方法。其思想主要为利用数据点构图，将聚类问题转化为图的最小割划分问题。根据切分子图规模的限定不同，一般有两种切图方式：Ratio Cut和Normalized Cut。Normalized Cut考虑最大化每个子图的度数，也是我们这里主要讨论的。根据大佬们的各种奇思妙想，Normalized Cut最终能转化成如下的目标方程： <span class="math display">\[\min\limits_F\mathop{tr}(\mathbf{F}^T\mathbf{D}^{-1/2}\mathbf{LD}^{-1/2}\mathbf{F}) \quad s.t.\mathbf{F}^T\mathbf{F}=\mathrm{I}\]</span> 其中，<span class="math inline">\(\mathbf{F}\in\mathbb{R}^{\mathrm{n}\times\mathrm{k}}\)</span>是我们最终要学出来的指示矩阵（正交化的），<span class="math inline">\(\mathbf{W}\)</span>是相似度矩阵（带权邻接矩阵），<span class="math inline">\(\mathbf{D}\in\mathbb{R}^{\mathrm{n}\times\mathrm{n}}\)</span>是相似度矩阵的度矩阵（对角矩阵），<span class="math inline">\(\mathbf{L} = \mathbf{D} - \mathbf{W}\in\mathbb{R}^{\mathrm{n}\times\mathrm{n}}\)</span>是拉普拉斯矩阵。这个问题是个NP hard问题，一般用特征值分解来近似获取<span class="math inline">\(\mathbf{F}\)</span>矩阵（谱分解优化，Ky Fan's Theorem），此时相当于做了一次映射，再对学出来的<span class="math inline">\(\mathbf{F}\)</span>矩阵应用一次聚类算法，则能得到比较好的效果。实际求解过程可以变成求解最大特征值的问题： <span class="math display">\[\max\limits_F\mathop{tr}(\mathbf{F}^T\mathbf{D}^{-1/2}\mathbf{WD}^{-1/2}\mathbf{F})\quad s.t.\mathbf{F}^T\mathbf{F} = \mathrm{I}\]</span> 这里给出了一个使用KNN构图，最后用k-means聚类的Ncut谱聚类的分类结果： <img src="/.io//Ncut.png" alt="谱聚类"></p>
+<h2 id="kernel-k-means">3.kernel k-means</h2>
+<p>   上面能看到，对于这种不是线性可分的数据集，k-means显得有点力不从心。那有没有方法使得k-means能处理这种线性不可分的聚类问题呢？我们从SVM处得到启发，如果应用kernel方法，那么这个线性不可分的问题就能用普通的k-means来划分了。这样就得到了kernel k-means： <span class="math display">\[\min\limits_{\mathbf{G}, \mathbf{F}}\mathcal{J}=\sum_{i=1}^{\mathrm{n}}\sum_{k&#39;=1}^{\mathrm{k}}G_{i, k&#39;}||\phi(\mathbf{X}_i)-\mathbf{F}_{k&#39;}||_2^2\]</span> 如果我们使用<span class="math inline">\(\mathbf{X}&#39;\)</span>表示经过核函数映射到RKHS后的矩阵（可能在特征维上是无限维的），即<span class="math inline">\(\mathbf{X}&#39;=[\phi(\mathbf{X}_1), \phi(\mathbf{X}_2), \dots, \phi(\mathbf{X}_{\mathrm{n}})]\)</span>，那么目标函数也可以表示成和上面类似的矩阵分解的形式： <span class="math display">\[\min\limits_{\mathbf{G}, \mathbf{F}}\;\mathcal{J}=\|{\mathbf{X}&#39;}^T-\mathbf{GF}^T\|_F^2 \quad s.t.\mathbf{G}_{i,k&#39;}\in\{0, 1\},\sum_{k&#39; = 1}^{\mathrm{k}}G_{i,k&#39;}=1,\forall i=1,2,\dots,\mathrm{n}\]</span>   因为kernel方法一般要使用内积的形式，即<span class="math inline">\(k_{i, j}=\phi(\mathbf{X}_i)\phi(\mathbf{X}_j)\)</span>，那我们需要对上面的目标函数进行转化。假设kernel矩阵<span class="math inline">\(\mathbf{K}\)</span>，矩阵的每个元素就是前面给出的<span class="math inline">\(k_{i, j}\)</span>。首先对每个质心点求导，因为这是个二次方程，令导数为<span class="math inline">\(0\)</span>得到取得最小值时的<span class="math inline">\(\mathbf{F}_{k&#39;}\)</span>： <span class="math display">\[\frac{\partial\mathcal{J}}{\partial\mathbf{F}_{k&#39;}}=-2\sum_{i=1}^{\mathrm{n}}\mathbf{G}_{i, k&#39;}[\phi(\mathbf{X}_i)-\mathbf{F}_{k&#39;}]=0\]</span> 即 <span class="math display">\[\mathbf{F}_{k&#39;}=\frac{\sum_{i=1}^{\mathrm{n}}\mathbf{G}_{i, k&#39;}\phi(\mathbf{X}_i)}{\sum_{i=1}^{\mathrm{n}}\mathbf{G}_{i, k&#39;}}\]</span> 如果假设 <span class="math display">\[\mathbf{A}_{i, k&#39;}=\frac{\mathbf{G}_{i, k&#39;}}{\sum_{j=1}^{\mathrm{n}}\mathbf{G}_{j, k&#39;}}\]</span> <span class="math display">\[\mathbf{A}=\begin{bmatrix}
+{\mathbf{A}_{1, 1}}&amp;{\mathbf{A}_{1, 2}}&amp;{\cdots}&amp;{\mathbf{A}_{1, \mathrm{k}}} \\
+{\mathbf{A}_{2, 1}}&amp;{\mathbf{A}_{2, 2}}&amp;{\cdots}&amp;{\mathbf{A}_{2, \mathrm{k}}} \\
+{\vdots}&amp;{\vdots}&amp;{\ddots}&amp;{\vdots} \\
+{\mathbf{A}_{\mathrm{n}, 1}}&amp;{\mathbf{A}_{\mathrm{n}, 2}}&amp;{\cdots}&amp;{\mathbf{A}_{\mathrm{n}, \mathrm{k}}} \\
+\end{bmatrix}\]</span> 那么有 <span class="math display">\[\mathbf{F}_{k&#39;}=\sum_{i=1}^{\mathrm{n}}\mathbf{A}_{i, k&#39;}\phi(\mathbf{X}_i)\]</span> 即<span class="math inline">\(\mathbf{F}_{k&#39;}\)</span> 是属于该类点的线性组合，或者说，<span class="math inline">\(\mathbf{F}_{k&#39;}\)</span>是该类点的均值。这个也说明了为什么k-means算法更新质心点时是取所有该类点的平均。将结果回带到目标方程中： <span class="math display">\[\begin{aligned}
+      \mathcal{J} &amp; =\sum_{i=1}^{\mathrm{n}}\sum_{k&#39;=1}^{\mathrm{k}}\mathbf{G}_{i, k&#39;}||\phi(\mathbf{X}_i)-\sum_{j=1}^{\mathrm{n}}\mathbf{A}_{j, k&#39;}\phi(\mathbf{X}_j)||_2^2 \\
+         &amp; =\sum_{i=1}^{\mathrm{n}}\sum_{k&#39;=1}^{\mathrm{k}}\mathbf{G}_{i, k&#39;}\{\phi(\mathbf{X}_i)^T\phi(\mathbf{X}_i)-2\phi(\mathbf{X}_i)^T\sum_{j=1}^{\mathrm{n}}\mathbf{A}_{j, k&#39;}\phi(\mathbf{X}_j)+[\sum_{j=1}^{\mathrm{n}}\mathbf{A}_{j, k&#39;}\phi(\mathbf{X}_j)][\sum_{l=1}^{\mathrm{n}}A_{l, k&#39;}\phi(\mathbf{X}_l)]\} \\
+         &amp; =\sum_{i=1}^{\mathrm{n}}\sum_{k&#39;=1}^{\mathrm{k}}\mathbf{G}_{i, k&#39;}(\mathbf{K}_{i, i}-2\mathbf{A}_{k&#39;}^T\mathbf{K}_i+\mathbf{A}_{k&#39;}^T\mathbf{KA}_{k&#39;}) \\
+    \end{aligned}\]</span> 注意到<span class="math inline">\(\sum_{i=1}^{\mathrm{n}}\mathbf{G}_{i, k&#39;}\mathbf{A}_{k&#39;} = \mathbf{G}_{k&#39;}\)</span> ，我们有： <span class="math display">\[\begin{aligned}
+        &amp; \sum_{k&#39;=1}^{\mathrm{k}}\sum_{i=1}^{\mathrm{n}}\mathbf{G}_{i, k&#39;}\mathbf{A}_{k&#39;}^T\mathbf{K}_i &amp; &amp; \sum_{k&#39;=1}^{\mathrm{k}}\sum_{i=1}^{\mathrm{n}}\mathbf{G}_{i, k&#39;}\mathbf{A}_{k&#39;}^T\mathbf{KA}_{k’} \\
+     = &amp; \sum_{k&#39;=1}^{\mathrm{k}}\mathbf{A}_{k&#39;}^T\mathbf{KG}_\mathbf{k&#39;} &amp; = &amp; \sum_{k&#39;=1}^{\mathrm{k}}\mathbf{A}_{k&#39;}^T\mathbf{K}\sum_{i=1}^{\mathrm{n}}\mathbf{G}_{i, k&#39;}\mathbf{A}_{k&#39;} \\
+     = &amp; \mathop{tr}(\mathbf{A}^T\mathbf{KG}) &amp; = &amp; \sum_{k&#39;=1}^{\mathrm{k}}\mathbf{A}_{k&#39;}^T\mathbf{KG}_{k&#39;} \\
+        &amp; &amp; = &amp; \mathop{tr}(\mathbf{A}^T\mathbf{KG})
+\end{aligned}\]</span> 因此可以得到： <span class="math display">\[\mathcal{J} = \mathop{tr}(\mathbf{K})-\mathop{tr}(\mathbf{A}^T\mathbf{KG})\]</span> 如果假设： <span class="math display">\[\mathbf{L}_{k&#39;, k&#39;} = \sum_{i=1}^{\mathrm{n}}\mathbf{G}_{i, k&#39;}\]</span> 其中，<span class="math inline">\(\mathbf{L}_{k&#39;, k&#39;}\)</span>表示第<span class="math inline">\(k&#39;\)</span>类样本的数量，<span class="math inline">\(\mathbf{L}\in\mathbb{R}^{\mathrm{k}\times\mathrm{k}}\)</span>为对角矩阵，那么有 <span class="math inline">\(\mathbf{AL} = \mathbf{G}\)</span>，如果进一步假设<span class="math inline">\(\mathbf{H} = \mathbf{AL}^{1/2}\)</span>，目标方程可以表示为： <span class="math display">\[\begin{aligned}
+    \mathcal{J} &amp; = \mathop{tr}(\mathbf{K})-\mathop{tr}(\mathbf{A}^T\mathbf{KAL}) \\
+       &amp; = \mathop{tr}(\mathbf{K})-\mathop{tr}(\mathbf{L}^{1/2}\mathbf{A}^T\mathbf{KAL}^{1/2}) \\
+       &amp; = \mathop{tr}(\mathbf{K})-\mathop{tr}(\mathbf{H}^T\mathbf{KH})
+\end{aligned}\]</span> 其中，<span class="math inline">\(\mathbf{H}\)</span>满足 <span class="math inline">\(\mathbf{H}^T\mathbf{H} = \mathrm{I}\)</span>。因为 <span class="math inline">\(tr(K)\)</span> 是一个常数，则求解的问题可以变为： <span class="math display">\[\max\limits_{\mathbf{H}}\mathop{tr}(\mathbf{H}^T\mathbf{KH})\quad s.t.\mathbf{H}^T\mathbf{H} = \mathrm{I}\]</span> 这里可以用上面Ncut类似的谱分解优化。需要注意的是，其实这里丢弃了<span class="math inline">\(\mathbf{H}\geq 0\)</span>，以及同一列元素相等的条件，只保留了其正交性的限制。关于非负正交矩阵，里面有很多有趣的性质[1]，这里就不详细说明了。</p>
+<p>   下面是用高斯核的kernel k-means的分类结果： <img src="/.io//kernelkmeans.png" alt="kernel kmeans-1"> <img src="/.io//kernelkmeans2.png" alt="kernel kmeans-2"></p>
+<h2 id="k-means和ncut的关系">4.k-means和Ncut的关系</h2>
+<p>   上面可以看到，kernel k-means和Ncut最终求解都可以转化为求解最大特征值的问题，那么k-means和Ncut是不是有某些联系吗？当然是有的。如果在上面的kernel k-means中引入点的权重，即每个点都有它的重要性<span class="math inline">\(\mathop{w}(\mathbf{X}_i)\)</span>，并假设重要性矩阵 <span class="math inline">\(\mathbf{W}\)</span>，其对角线的元素 <span class="math inline">\(\mathbf{W}_{i, i}\)</span> 表示点<span class="math inline">\(\mathbf{X}_i\)</span> 的重要性<span class="math inline">\(\mathop{w}(\mathbf{X}_i)\)</span>，是一个对角矩阵。那么目标方程可以表示为： <span class="math display">\[\min\limits_{\mathbf{G}, \mathbf{F}}\mathcal{J}=\sum_{i=1}^{\mathrm{n}}\sum_{k&#39;=1}^{\mathrm{k}}\mathbf{G}_{i, k&#39;}\mathbf{W}_{i, i}\|\phi(\mathbf{X}_i)-\mathbf{F}_{k&#39;}\|_2^2\]</span> 类似上面的方法，目标方程可以转化为： <span class="math display">\[\mathcal{J} = \mathop{tr}(\mathbf{KW})-\mathop{tr}(\mathbf{A}^T\mathbf{KWG})\]</span> 其中<span class="math inline">\(\mathbf{A}_{i, k&#39;}=\frac{\mathbf{G}_{i, k&#39;}\mathbf{W}_{i, i}}{\sum_{j=1}^{\mathrm{n}}\mathbf{G}_{j, k&#39;}\mathbf{W}_{j, j}}\)</span>。和上面类似，再假设： <span class="math display">\[\mathbf{L}_{k&#39;, k&#39;} = \sum_{i=1}^{\mathrm{n}}\mathbf{G}_{i, k&#39;}\mathbf{W}_{i, i}\]</span> 有<span class="math inline">\(\mathbf{WG} = \mathbf{AL}\)</span>，令<span class="math inline">\(\mathbf{H} = \mathbf{W}^{-1/2}\mathbf{AL}^{1/2}\)</span>，可以证明<span class="math inline">\(\mathbf{H}\)</span>矩阵相当于<span class="math inline">\(\mathbf{A}\)</span>矩阵的每个元素取根号，因此有<span class="math inline">\(\mathbf{H}^T\mathbf{H} = \mathrm{I}\)</span>，可以得到最终求解的目标函数： <span class="math display">\[\max\limits_H\mathop{tr}(\mathbf{H}^T\mathbf{W}^{1/2}\mathbf{KW}^{1/2}\mathbf{H})\quad s.t.\mathbf{H}^T\mathbf{H} = \mathrm{I}\]</span> 对比Ncut的目标函数： <span class="math display">\[\max\limits_F\mathop{tr}(\mathbf{F}^T\mathbf{D}^{-1/2}\mathbf{WD}^{-1/2}\mathbf{F})\quad s.t.\mathbf{F}^T\mathbf{F} = \mathrm{I}\]</span> 如果令<span class="math inline">\(\mathbf{W}_{i, i}=\frac{1}{\sum_{i=1}^{\mathrm{n}}\mathbf{K}_{i, j}}\)</span>，那么上面介绍的weighted kernel k-means就和Ncut求解的目标函数相同了。因此我们可以将Ncut看做利用构图的方法构建kernel矩阵的一种特殊的weighted kernel k-means。</p>
+<h2 id="参考资料">5.参考资料</h2>
+<p>[1]Junjun Pan, Michael K. Ng, Xiongjun Zhang. Structured Convex Optimization Method for Orthogonal Nonnegative Matrix Factorization</p>
+<p>[2]Dhillon I S, Guan Y, Kulis B. Kernel k-means: spectral clustering and normalized cuts[C]// Tenth ACM SIGKDD International Conference on Knowledge Discovery and Data Mining. ACM, 2004:551-556.</p>
+<p>[3]Du L, Zhou P, Shi L, et al. Robust multiple kernel K-means using ℓ 2;1 -norm[C]// International Conference on Artificial Intelligence. AAAI Press, 2015:3476-3482.</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/k-means/" rel="tag"># k-means</a>
+              <a href="/tags/%E8%B0%B1%E8%81%9A%E7%B1%BB/" rel="tag"># 谱聚类</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+                <a href="/2019/11/20/hello-world/" rel="prev" title="Hello World">
+                  Hello World <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#k-means"><span class="nav-number">1.</span> <span class="nav-text">1.k-means</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#谱聚类"><span class="nav-number">2.</span> <span class="nav-text">2.谱聚类</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#kernel-k-means"><span class="nav-number">3.</span> <span class="nav-text">3.kernel k-means</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#k-means和ncut的关系"><span class="nav-number">4.</span> <span class="nav-text">4.k-means和Ncut的关系</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料"><span class="nav-number">5.</span> <span class="nav-text">5.参考资料</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <img class="site-author-image" itemprop="image" alt="wy54224"
+    src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">wy54224</p>
+  <div class="site-description" itemprop="description">个人学习笔记记录</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">2</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wy54224" title="GitHub &amp;rarr; https:&#x2F;&#x2F;github.com&#x2F;wy54224" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/mailto:wy54224@gmail.com" title="E-Mail &amp;rarr; mailto:wy54224@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">wy54224</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.0.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.5.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/pangu@4/dist/browser/pangu.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script>
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.getAttribute('pjax') !== null) {
+      element.setAttribute('pjax', '');
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+
+  
+
+  
+      
+<script type="text/x-mathjax-config">
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') {
+          next = next.nextSibling;
+        }
+        if (next && next.nodeName.toLowerCase() === 'br') {
+          next.parentNode.removeChild(next);
+        }
+      }
+    });
+  });
+
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      element = document.getElementById(all[i].inputID + '-Frame').parentNode;
+      if (element.nodeName.toLowerCase() == 'li') {
+        element = element.parentNode;
+      }
+      element.classList.add('has-jax');
+    }
+  });
+</script>
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML', () => {
+    MathJax.Hub.Typeset();
+  }, window.MathJax);
+</script>
+
+    
+
+  
+
+    </div>
+</body>
+</html>
