@@ -58,7 +58,7 @@
 <meta property="og:site_name" content="wavy的流动小屋">
 <meta property="og:description" content="1. Principal Component Analysis(PCA) 1.1 问题分析 主成分分析——寻找一个超平面，尽量将所有样本正确表达。">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-11-21T14:31:22.110Z">
+<meta property="og:updated_time" content="2019-11-21T14:54:27.966Z">
 <meta name="twitter:card" content="summary">
 
 <link rel="canonical" href="https://wy54224.github.io/2019/11/21/PCA/">
@@ -199,7 +199,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2019-11-21 22:29:52 / 修改时间：22:31:22" itemprop="dateCreated datePublished" datetime="2019-11-21T22:29:52+08:00">2019-11-21</time>
+              <time title="创建时间：2019-11-21 22:29:52 / 修改时间：22:54:27" itemprop="dateCreated datePublished" datetime="2019-11-21T22:29:52+08:00">2019-11-21</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -226,7 +226,13 @@
       
         <h2 id="principal-component-analysispca">1. Principal Component Analysis(PCA)</h2>
 <h3 id="问题分析">1.1 问题分析</h3>
-<p>主成分分析——寻找一个超平面，尽量将所有样本正确表达。 <a id="more"></a> 1. <strong>最近重构性</strong>：样本点到这个超平面的目标足够近； 2. <strong>最大可分性</strong>：略。</p>
+<p>主成分分析——寻找一个超平面，尽量将所有样本正确表达。 <a id="more"></a></p>
+<blockquote>
+<ol type="1">
+<li><strong>最近重构性</strong>：样本点到这个超平面的目标足够近；</li>
+<li><strong>最大可分性</strong>：略。</li>
+</ol>
+</blockquote>
 <p>从<em>最近重构性</em>的角度来说，PCA的目标函数可以构造如下：</p>
 <p><span class="math display">\[
 \begin{aligned}
@@ -235,7 +241,7 @@
 \end{aligned}
 \]</span></p>
 <h3 id="优化">1.2 优化</h3>
-<p>假设投影的低维超平面由<span class="math display">\[r\]</span>个正交的单位坐标<span class="math display">\[\mathbf{W} = \{\mathbf{w}_1, \mathbf{w}_2, ..., \mathbf{w}_r\}\in\mathbb{R}^{d\times r}\]</span>构成，那么存在投影关系<span class="math inline">\(\mathbf{a}_i=\mathbf{W}\mathbf{z}_i\)</span>，<span class="math inline">\(\mathbf{z}_i\in\mathbb{R}^r\)</span>是<span class="math inline">\(\mathbf{d}_i\)</span>在超平面<span class="math inline">\(\mathbf{W}\)</span>上的投影。而<span class="math inline">\(\mathbf{z}_i\)</span>又可以通过<span class="math inline">\(\mathbf{d}_i\)</span>和<span class="math inline">\(\mathbf{W}\)</span>的列向量逐一点积得到<span class="math inline">\(\mathbf{z}_i = \mathbf{W}^T\mathbf{d}_i\)</span>，有<span class="math inline">\(\mathbf{A} = \mathbf{W}\mathbf{W}^T\mathbf{D}\)</span>。退而求其次，如果优化error项的平方，优化目标可以变为： <span class="math display">\[
+<p>假设投影的低维超平面由<span class="math inline">\(r\)</span>个正交的单位坐标<span class="math inline">\(\mathbf{W} = \{\mathbf{w}_1, \mathbf{w}_2, ..., \mathbf{w}_r\}\in\mathbb{R}^{d\times r}\)</span>构成，那么存在投影关系<span class="math inline">\(\mathbf{a}_i=\mathbf{W}\mathbf{z}_i\)</span>，<span class="math inline">\(\mathbf{z}_i\in\mathbb{R}^r\)</span>是<span class="math inline">\(\mathbf{d}_i\)</span>在超平面<span class="math inline">\(\mathbf{W}\)</span>上的投影。而<span class="math inline">\(\mathbf{z}_i\)</span>又可以通过<span class="math inline">\(\mathbf{d}_i\)</span>和<span class="math inline">\(\mathbf{W}\)</span>的列向量逐一点积得到<span class="math inline">\(\mathbf{z}_i = \mathbf{W}^T\mathbf{d}_i\)</span>，有<span class="math inline">\(\mathbf{A} = \mathbf{W}\mathbf{W}^T\mathbf{D}\)</span>。退而求其次，如果优化error项的平方，优化目标可以变为： <span class="math display">\[
 \begin{aligned}
     \|\mathbf{E}\|_F^2 &amp;= \|\mathbf{D} - \mathbf{A}\|_F^2\\
     &amp;= \mathop{Tr}[(\mathbf{D} - \mathbf{A})^T(\mathbf{D} - \mathbf{A})]\\
@@ -257,7 +263,9 @@
     \min\limits_{\mathbf{A}, \mathbf{E}}&amp;\quad\|\mathbf{A}\|_* + \lambda\|\mathbf{E}\|_1\\
     \text{subject to}&amp;\quad\mathbf{D} = \mathbf{A} + \mathbf{E}
 \end{aligned}
-\]</span> ### 2.2 优化 带等式约束的问题，直接用梯度上升法最大化对偶问题，增广拉格朗日函数为： <span class="math display">\[
+\]</span></p>
+<h3 id="优化-1">2.2 优化</h3>
+<p>带等式约束的问题，直接用梯度上升法最大化对偶问题，增广拉格朗日函数为： <span class="math display">\[
 \mathop{L}(\mathbf{A}, \mathbf{E}, \mathbf{Y}, \mathbf{\mu}) = \|\mathbf{A}\|_* + \lambda\|\mathbf{E}\|_1 + &lt;\mathbf{Y}, \mathbf{D} - \mathbf{A} - \mathbf{E}&gt; + \frac{\mu}{2}\|\mathbf{D} - \mathbf{A} - \mathbf{E}\|_F^2
 \]</span> 定义soft-thresholding(shrinkage)函数： <span class="math display">\[
 \mathop{\mathcal{S}_{\epsilon}}[x] = \begin{cases}
@@ -277,7 +285,9 @@
 <li>最优步长已被证明为<span class="math inline">\(\mu\)</span>；</li>
 <li>即使<span class="math inline">\(\mu\)</span>在迭代中没有接近正无穷，算法依旧能保证收敛到最优。</li>
 </ul>
-<p>在Inexact的ALM算法中，不用每次外部迭代都将<span class="math inline">\(\mathbf{A}\)</span>和<span class="math inline">\(\mathbf{E}\)</span>用坐标上升直到收敛，只需要分别更新一次即可（原文证明了收敛性）。 ### 2.3 收敛条件 算法收敛需要满足以下KKT条件： <span class="math display">\[
+<p>在Inexact的ALM算法中，不用每次外部迭代都将<span class="math inline">\(\mathbf{A}\)</span>和<span class="math inline">\(\mathbf{E}\)</span>用坐标上升直到收敛，只需要分别更新一次即可（原文证明了收敛性）。</p>
+<h3 id="收敛条件">2.3 收敛条件</h3>
+<p>算法收敛需要满足以下KKT条件： <span class="math display">\[
 \begin{aligned}
     \mathbf{D} - \mathbf{A}^* - \mathbf{E}^* = 0\\
     \mathbf{Y}^* \in\partial\|\mathbf{A}^*\|_*\\
@@ -285,18 +295,25 @@
 \end{aligned}
 \]</span> 第二项和第三项是分别对<span class="math inline">\(\mathbf{A}\)</span>和<span class="math inline">\(\mathbf{E}\)</span>求导得到的（这里表示<span class="math inline">\(\mathbf{Y}\)</span>属于它们的次梯度）。实际代码来看论文中对第二和第三个条件放缩得到的式子好像有点不靠谱，用第一个式子就够了。</p>
 <h2 id="probabilistic-principal-component-analysisppca">3. Probabilistic Principal Component Analysis(PPCA)</h2>
-<p>这一块主要是从generation和inference的角度来解释PCA。 ### 3.1 生成过程 和前面类似，数据<span class="math inline">\(\mathbf{x}\)</span>是从latent space的向量<span class="math inline">\(\mathbf{z}\)</span>经过一个变换矩阵<span class="math inline">\(\mathbf{W}\)</span>的得到的。 <span class="math display">\[
+<p>这一块主要是从generation和inference的角度来解释PCA。</p>
+<h3 id="生成过程">3.1 生成过程</h3>
+<p>和前面类似，数据<span class="math inline">\(\mathbf{x}\)</span>是从latent space的向量<span class="math inline">\(\mathbf{z}\)</span>经过一个变换矩阵<span class="math inline">\(\mathbf{W}\)</span>的得到的。 <span class="math display">\[
 \begin{aligned}
     \mathop{P}(\mathbf{z})\sim\mathcal{N}(0, \mathrm{I})\\
     \mathop{P}(\mathbf{d}|\mathbf{z}; \mathbf{W}, \mathbf{\mu}, \mathbf{\sigma})\sim\mathcal{N}(\mathbf{W}\mathbf{z} + \mathbf{\mu}, \mathbf{\sigma}^2\mathrm{I})
 \end{aligned}
-\]</span> ### 3.2 推断过程 #### 3.2.1 边际概率计算 <span class="math display">\[
+\]</span></p>
+<h3 id="推断过程">3.2 推断过程</h3>
+<h4 id="边际概率计算">3.2.1 边际概率计算</h4>
+<p><span class="math display">\[
 \mathop{P}(\mathbf{d};\mathbf{W}, \mathbf{\mu}, \mathbf{\sigma}) = \int\mathop{P}(\mathbf{d}|\mathbf{z}; \mathbf{W}, \mathbf{\mu}, \mathbf{\sigma})\mathop{P}(\mathbf{z})\,d\mathbf{z}
 \]</span> 从<span class="math inline">\(\mathbf{x} = \mathbf{W}\mathbf{z} + \mathbf{\mu} + \mathbf{\epsilon}\)</span>的角度来说，这是关于<span class="math inline">\(\mathbf{z}\)</span>和<span class="math inline">\(\mathbf{\epsilon}\)</span>的一个线性变换，因此结果仍然是一个高斯分布。主要由下面式子得到： &gt; 假设<span class="math inline">\(\mathbf{x}\sim\mathcal{N}(\mathbf{m}_{\mathbf{x}}, \mathbf{\Sigma}_{\mathbf{x}})\)</span>和<span class="math inline">\(\mathbf{y}\sim\mathcal{N}(\mathbf{m}_{\mathbf{y}}, \mathbf{\Sigma}_{\mathbf{y}})\)</span>，那么有（均值和方差直接套定义算期望就可以得到） &gt; <span class="math display">\[
 \mathbf{Ax} + \mathbf{By} + \mathbf{c}\sim\mathcal{N}(\mathbf{Am}_{\mathbf{x}} + \mathbf{Bm}_{\mathbf{y}} + \mathbf{c}, \mathbf{A}\mathbf{\Sigma}_{\mathbf{x}}\mathbf{A}^T + \mathbf{B}\mathbf{\Sigma}_{\mathbf{y}}\mathbf{B}^T)
 \]</span> 因此边际概率为 <span class="math display">\[
 \mathop{P}(\mathbf{d};\mathbf{W}, \mathbf{\mu}, \mathbf{\sigma})\sim\mathcal{N}(\mathbf{\mu}, \mathbf{W}\mathbf{W}^T + \mathbf{\sigma}^2\mathrm{I})
-\]</span> #### 3.2.2 推断过程 后验概率可以直接硬解，不需要套variational inference，可以直接EM算法。 <span class="math display">\[
+\]</span></p>
+<h4 id="推断过程-1">3.2.2 推断过程</h4>
+<p>后验概率可以直接硬解，不需要套variational inference，可以直接EM算法。 <span class="math display">\[
 \begin{aligned}
 P(\mathbf{z}|\mathbf{x}) = \frac{\mathop{P}(\mathbf{d}|\mathbf{z}; \mathbf{W}, \mathbf{\mu}, \mathbf{\sigma})P(\mathbf{z})}{P_{\mathbf{W}, \mathbf{\mu}, \mathbf{\sigma}}(\mathbf{x})}
 \end{aligned}
@@ -315,7 +332,11 @@ P(\mathbf{z}|\mathbf{x}) = \frac{\mathop{P}(\mathbf{d}|\mathbf{z}; \mathbf{W}, \
 \end{aligned}
 \]</span> 观察均值和方差，得到 <span class="math display">\[
 P(\mathbf{z}|\mathbf{x})\sim\mathcal{N}(\mathbf{M}^{-1}\mathbf{W}^T(\mathbf{x} - \mathbf{\mu}), \mathbf{\sigma}^2\mathbf{M}^{-1})
-\]</span> 那么使用EM算法，每次迭代先最小化ELBO，然后将概率项换成当前的后验概率即可。 ## 4. CCA ## 5. PCCA ## 6. Multi-view Anomaly Detection via Robust Probabilistic Latent Variable Models</p>
+\]</span> 那么使用EM算法，每次迭代先最小化ELBO，然后将概率项换成当前的后验概率即可。</p>
+<p><strong>待续……</strong></p>
+<h2 id="cca">4. CCA</h2>
+<h2 id="pcca">5. PCCA</h2>
+<h2 id="multi-view-anomaly-detection-via-robust-probabilistic-latent-variable-models">6. Multi-view Anomaly Detection via Robust Probabilistic Latent Variable Models</h2>
 <h2 id="引用文献">7.引用文献</h2>
 <p>[1] Lin Z, Chen M, Ma Y. The augmented lagrange multiplier method for exact recovery of corrupted low-rank matrices[J]. arXiv preprint arXiv:1009.5055, 2010.</p>
 <p>[2] Tipping M E, Bishop C M. Probabilistic principal component analysis[J]. Journal of the Royal Statistical Society: Series B (Statistical Methodology), 1999, 61(3): 611-622.</p>
@@ -384,7 +405,7 @@ P(\mathbf{z}|\mathbf{x})\sim\mathcal{N}(\mathbf{M}^{-1}\mathbf{W}^T(\mathbf{x} -
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#principal-component-analysispca"><span class="nav-number">1.</span> <span class="nav-text">1. Principal Component Analysis(PCA)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#问题分析"><span class="nav-number">1.1.</span> <span class="nav-text">1.1 问题分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#优化"><span class="nav-number">1.2.</span> <span class="nav-text">1.2 优化</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#robust-principal-component-analysisrpca"><span class="nav-number">2.</span> <span class="nav-text">2.Robust Principal Component Analysis(RPCA)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#问题分析-1"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 问题分析</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#probabilistic-principal-component-analysisppca"><span class="nav-number">3.</span> <span class="nav-text">3. Probabilistic Principal Component Analysis(PPCA)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#引用文献"><span class="nav-number">4.</span> <span class="nav-text">7.引用文献</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#principal-component-analysispca"><span class="nav-number">1.</span> <span class="nav-text">1. Principal Component Analysis(PCA)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#问题分析"><span class="nav-number">1.1.</span> <span class="nav-text">1.1 问题分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#优化"><span class="nav-number">1.2.</span> <span class="nav-text">1.2 优化</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#robust-principal-component-analysisrpca"><span class="nav-number">2.</span> <span class="nav-text">2.Robust Principal Component Analysis(RPCA)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#问题分析-1"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 问题分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#优化-1"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 优化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#收敛条件"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 收敛条件</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#probabilistic-principal-component-analysisppca"><span class="nav-number">3.</span> <span class="nav-text">3. Probabilistic Principal Component Analysis(PPCA)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#生成过程"><span class="nav-number">3.1.</span> <span class="nav-text">3.1 生成过程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#推断过程"><span class="nav-number">3.2.</span> <span class="nav-text">3.2 推断过程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#边际概率计算"><span class="nav-number">3.2.1.</span> <span class="nav-text">3.2.1 边际概率计算</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#推断过程-1"><span class="nav-number">3.2.2.</span> <span class="nav-text">3.2.2 推断过程</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#cca"><span class="nav-number">4.</span> <span class="nav-text">4. CCA</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#pcca"><span class="nav-number">5.</span> <span class="nav-text">5. PCCA</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#multi-view-anomaly-detection-via-robust-probabilistic-latent-variable-models"><span class="nav-number">6.</span> <span class="nav-text">6. Multi-view Anomaly Detection via Robust Probabilistic Latent Variable Models</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#引用文献"><span class="nav-number">7.</span> <span class="nav-text">7.引用文献</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
