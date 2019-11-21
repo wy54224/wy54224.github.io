@@ -51,22 +51,22 @@
 </script>
 
   <meta name="description" content="1.k-means    k-means是我们常用的聚类算法之一。假设对于一个数据集，有\(\mathrm{n}\)个点需要我们分成\(\mathrm{k}\)类，每个点有\(\mathrm{d}\)个特征，那么用矩阵分解的形式表示k-means的目标方程为：">
-<meta name="keywords" content="k-means,谱聚类">
+<meta name="keywords" content="聚类,k-means,spectral clustering">
 <meta property="og:type" content="article">
 <meta property="og:title" content="从KMeans到Ncut">
-<meta property="og:url" content="https:&#x2F;&#x2F;wy54224.github.io&#x2F;2018&#x2F;05&#x2F;24&#x2F;KMeans2Ncut&#x2F;index.html">
+<meta property="og:url" content="https:&#x2F;&#x2F;wy54224.github.io&#x2F;2018&#x2F;05&#x2F;24&#x2F;kmeans2ncut&#x2F;index.html">
 <meta property="og:site_name" content="wavy的流动小屋">
 <meta property="og:description" content="1.k-means    k-means是我们常用的聚类算法之一。假设对于一个数据集，有\(\mathrm{n}\)个点需要我们分成\(\mathrm{k}\)类，每个点有\(\mathrm{d}\)个特征，那么用矩阵分解的形式表示k-means的目标方程为：">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="https:&#x2F;&#x2F;wy54224.github.io&#x2F;.io&#x2F;&#x2F;kmeans.png">
-<meta property="og:image" content="https:&#x2F;&#x2F;wy54224.github.io&#x2F;.io&#x2F;&#x2F;Ncut.png">
-<meta property="og:image" content="https:&#x2F;&#x2F;wy54224.github.io&#x2F;.io&#x2F;&#x2F;kernelkmeans.png">
-<meta property="og:image" content="https:&#x2F;&#x2F;wy54224.github.io&#x2F;.io&#x2F;&#x2F;kernelkmeans2.png">
-<meta property="og:updated_time" content="2019-11-21T07:33:17.812Z">
+<meta property="og:image" content="https:&#x2F;&#x2F;wy54224.github.io&#x2F;2018&#x2F;05&#x2F;24&#x2F;kmeans2ncut&#x2F;kmeans.png">
+<meta property="og:image" content="https:&#x2F;&#x2F;wy54224.github.io&#x2F;2018&#x2F;05&#x2F;24&#x2F;kmeans2ncut&#x2F;Ncut.png">
+<meta property="og:image" content="https:&#x2F;&#x2F;wy54224.github.io&#x2F;2018&#x2F;05&#x2F;24&#x2F;kmeans2ncut&#x2F;kernelkmeans.png">
+<meta property="og:image" content="https:&#x2F;&#x2F;wy54224.github.io&#x2F;2018&#x2F;05&#x2F;24&#x2F;kmeans2ncut&#x2F;kernelkmeans2.png">
+<meta property="og:updated_time" content="2019-11-21T12:50:52.427Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https:&#x2F;&#x2F;wy54224.github.io&#x2F;.io&#x2F;&#x2F;kmeans.png">
+<meta name="twitter:image" content="https:&#x2F;&#x2F;wy54224.github.io&#x2F;2018&#x2F;05&#x2F;24&#x2F;kmeans2ncut&#x2F;kmeans.png">
 
-<link rel="canonical" href="https://wy54224.github.io/2018/05/24/KMeans2Ncut/">
+<link rel="canonical" href="https://wy54224.github.io/2018/05/24/kmeans2ncut/">
 
 
 <script id="page-configurations">
@@ -180,7 +180,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wy54224.github.io/2018/05/24/KMeans2Ncut/">
+    <link itemprop="mainEntityOfPage" href="https://wy54224.github.io/2018/05/24/kmeans2ncut/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -210,7 +210,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2019-11-21 15:33:17" itemprop="dateModified" datetime="2019-11-21T15:33:17+08:00">2019-11-21</time>
+                <time title="修改时间：2019-11-21 20:50:52" itemprop="dateModified" datetime="2019-11-21T20:50:52+08:00">2019-11-21</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -218,8 +218,8 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/machinglearning/" itemprop="url" rel="index">
-                    <span itemprop="name">machinglearning</span>
+                  <a href="/categories/maching-learning/" itemprop="url" rel="index">
+                    <span itemprop="name">maching learning</span>
                   </a>
                 </span>
             </span>
@@ -236,9 +236,9 @@
 
       
         <h2 id="k-means">1.k-means</h2>
-<p>   k-means是我们常用的聚类算法之一。假设对于一个数据集，有<span class="math inline">\(\mathrm{n}\)</span>个点需要我们分成<span class="math inline">\(\mathrm{k}\)</span>类，每个点有<span class="math inline">\(\mathrm{d}\)</span>个特征，那么用矩阵分解的形式表示k-means的目标方程为： <a id="more"></a> <span class="math display">\[\min\limits_{\mathbf{G},\mathbf{F}}\|\mathbf{X}^T-\mathbf{GF}^T\|_F^2 \quad s.t.\mathbf{G}_{i,k}\in\{0, 1\},\sum_{k=1}^K\mathbf{G}_{i,k}=1,\forall i=1,2,\dots,\mathrm{n}\]</span> 其中，<span class="math inline">\(\mathbf{X}\in \mathbb{R}^{\mathrm{d}\times\mathrm{n}}\)</span>，即 <span class="math inline">\(\mathbf{X}\)</span> 的一个列向量对应一个数据点；<span class="math inline">\(\mathbf{G}\in\mathbb{R}^{\mathrm{n}\times\mathrm{k}}\)</span>，为指示矩阵，如果点 <span class="math inline">\(\mathbf{X}_i\)</span> 属于类<span class="math inline">\(\mathrm{k}\)</span>，则<span class="math inline">\(\mathbf{G}_{i,k}=1\)</span>，否则为<span class="math inline">\(0\)</span>；<span class="math inline">\(\mathbf{F}\in\mathbb{R}^{\mathrm{d}\times\mathrm{k}}\)</span>，为质心点矩阵，表示每个聚类的中心点。如果没有特殊说明，对于矩阵<span class="math inline">\(\mathbf{A}\)</span>，<span class="math inline">\(\mathbf{A}_i\)</span> 表示 <span class="math inline">\(\mathbf{A}\)</span>的第<span class="math inline">\(i\)</span>列，而<span class="math inline">\(\mathbf{A}^i\)</span>表示<span class="math inline">\(\mathbf{A}\)</span>的第<span class="math inline">\(i\)</span>行。这里给出了一个标准k-means的分类结果： <img src="/.io//kmeans.png" alt="k-means聚类"></p>
+<p>   k-means是我们常用的聚类算法之一。假设对于一个数据集，有<span class="math inline">\(\mathrm{n}\)</span>个点需要我们分成<span class="math inline">\(\mathrm{k}\)</span>类，每个点有<span class="math inline">\(\mathrm{d}\)</span>个特征，那么用矩阵分解的形式表示k-means的目标方程为： <a id="more"></a> <span class="math display">\[\min\limits_{\mathbf{G},\mathbf{F}}\|\mathbf{X}^T-\mathbf{GF}^T\|_F^2 \quad s.t.\mathbf{G}_{i,k}\in\{0, 1\},\sum_{k=1}^K\mathbf{G}_{i,k}=1,\forall i=1,2,\dots,\mathrm{n}\]</span> 其中，<span class="math inline">\(\mathbf{X}\in \mathbb{R}^{\mathrm{d}\times\mathrm{n}}\)</span>，即 <span class="math inline">\(\mathbf{X}\)</span> 的一个列向量对应一个数据点；<span class="math inline">\(\mathbf{G}\in\mathbb{R}^{\mathrm{n}\times\mathrm{k}}\)</span>，为指示矩阵，如果点 <span class="math inline">\(\mathbf{X}_i\)</span> 属于类<span class="math inline">\(\mathrm{k}\)</span>，则<span class="math inline">\(\mathbf{G}_{i,k}=1\)</span>，否则为<span class="math inline">\(0\)</span>；<span class="math inline">\(\mathbf{F}\in\mathbb{R}^{\mathrm{d}\times\mathrm{k}}\)</span>，为质心点矩阵，表示每个聚类的中心点。如果没有特殊说明，对于矩阵<span class="math inline">\(\mathbf{A}\)</span>，<span class="math inline">\(\mathbf{A}_i\)</span> 表示 <span class="math inline">\(\mathbf{A}\)</span>的第<span class="math inline">\(i\)</span>列，而<span class="math inline">\(\mathbf{A}^i\)</span>表示<span class="math inline">\(\mathbf{A}\)</span>的第<span class="math inline">\(i\)</span>行。这里给出了一个标准k-means的分类结果： <img src="/2018/05/24/kmeans2ncut/kmeans.png" alt="k-means聚类"></p>
 <h2 id="谱聚类">2.谱聚类</h2>
-<p>  谱聚类也是一种比较常用的聚类方法。其思想主要为利用数据点构图，将聚类问题转化为图的最小割划分问题。根据切分子图规模的限定不同，一般有两种切图方式：Ratio Cut和Normalized Cut。Normalized Cut考虑最大化每个子图的度数，也是我们这里主要讨论的。根据大佬们的各种奇思妙想，Normalized Cut最终能转化成如下的目标方程： <span class="math display">\[\min\limits_F\mathop{tr}(\mathbf{F}^T\mathbf{D}^{-1/2}\mathbf{LD}^{-1/2}\mathbf{F}) \quad s.t.\mathbf{F}^T\mathbf{F}=\mathrm{I}\]</span> 其中，<span class="math inline">\(\mathbf{F}\in\mathbb{R}^{\mathrm{n}\times\mathrm{k}}\)</span>是我们最终要学出来的指示矩阵（正交化的），<span class="math inline">\(\mathbf{W}\)</span>是相似度矩阵（带权邻接矩阵），<span class="math inline">\(\mathbf{D}\in\mathbb{R}^{\mathrm{n}\times\mathrm{n}}\)</span>是相似度矩阵的度矩阵（对角矩阵），<span class="math inline">\(\mathbf{L} = \mathbf{D} - \mathbf{W}\in\mathbb{R}^{\mathrm{n}\times\mathrm{n}}\)</span>是拉普拉斯矩阵。这个问题是个NP hard问题，一般用特征值分解来近似获取<span class="math inline">\(\mathbf{F}\)</span>矩阵（谱分解优化，Ky Fan's Theorem），此时相当于做了一次映射，再对学出来的<span class="math inline">\(\mathbf{F}\)</span>矩阵应用一次聚类算法，则能得到比较好的效果。实际求解过程可以变成求解最大特征值的问题： <span class="math display">\[\max\limits_F\mathop{tr}(\mathbf{F}^T\mathbf{D}^{-1/2}\mathbf{WD}^{-1/2}\mathbf{F})\quad s.t.\mathbf{F}^T\mathbf{F} = \mathrm{I}\]</span> 这里给出了一个使用KNN构图，最后用k-means聚类的Ncut谱聚类的分类结果： <img src="/.io//Ncut.png" alt="谱聚类"></p>
+<p>  谱聚类也是一种比较常用的聚类方法。其思想主要为利用数据点构图，将聚类问题转化为图的最小割划分问题。根据切分子图规模的限定不同，一般有两种切图方式：Ratio Cut和Normalized Cut。Normalized Cut考虑最大化每个子图的度数，也是我们这里主要讨论的。根据大佬们的各种奇思妙想，Normalized Cut最终能转化成如下的目标方程： <span class="math display">\[\min\limits_F\mathop{tr}(\mathbf{F}^T\mathbf{D}^{-1/2}\mathbf{LD}^{-1/2}\mathbf{F}) \quad s.t.\mathbf{F}^T\mathbf{F}=\mathrm{I}\]</span> 其中，<span class="math inline">\(\mathbf{F}\in\mathbb{R}^{\mathrm{n}\times\mathrm{k}}\)</span>是我们最终要学出来的指示矩阵（正交化的），<span class="math inline">\(\mathbf{W}\)</span>是相似度矩阵（带权邻接矩阵），<span class="math inline">\(\mathbf{D}\in\mathbb{R}^{\mathrm{n}\times\mathrm{n}}\)</span>是相似度矩阵的度矩阵（对角矩阵），<span class="math inline">\(\mathbf{L} = \mathbf{D} - \mathbf{W}\in\mathbb{R}^{\mathrm{n}\times\mathrm{n}}\)</span>是拉普拉斯矩阵。这个问题是个NP hard问题，一般用特征值分解来近似获取<span class="math inline">\(\mathbf{F}\)</span>矩阵（谱分解优化，Ky Fan's Theorem），此时相当于做了一次映射，再对学出来的<span class="math inline">\(\mathbf{F}\)</span>矩阵应用一次聚类算法，则能得到比较好的效果。实际求解过程可以变成求解最大特征值的问题： <span class="math display">\[\max\limits_F\mathop{tr}(\mathbf{F}^T\mathbf{D}^{-1/2}\mathbf{WD}^{-1/2}\mathbf{F})\quad s.t.\mathbf{F}^T\mathbf{F} = \mathrm{I}\]</span> 这里给出了一个使用KNN构图，最后用k-means聚类的Ncut谱聚类的分类结果： <img src="/2018/05/24/kmeans2ncut/Ncut.png" alt="谱聚类"></p>
 <h2 id="kernel-k-means">3.kernel k-means</h2>
 <p>   上面能看到，对于这种不是线性可分的数据集，k-means显得有点力不从心。那有没有方法使得k-means能处理这种线性不可分的聚类问题呢？我们从SVM处得到启发，如果应用kernel方法，那么这个线性不可分的问题就能用普通的k-means来划分了。这样就得到了kernel k-means： <span class="math display">\[\min\limits_{\mathbf{G}, \mathbf{F}}\mathcal{J}=\sum_{i=1}^{\mathrm{n}}\sum_{k&#39;=1}^{\mathrm{k}}G_{i, k&#39;}||\phi(\mathbf{X}_i)-\mathbf{F}_{k&#39;}||_2^2\]</span> 如果我们使用<span class="math inline">\(\mathbf{X}&#39;\)</span>表示经过核函数映射到RKHS后的矩阵（可能在特征维上是无限维的），即<span class="math inline">\(\mathbf{X}&#39;=[\phi(\mathbf{X}_1), \phi(\mathbf{X}_2), \dots, \phi(\mathbf{X}_{\mathrm{n}})]\)</span>，那么目标函数也可以表示成和上面类似的矩阵分解的形式： <span class="math display">\[\min\limits_{\mathbf{G}, \mathbf{F}}\;\mathcal{J}=\|{\mathbf{X}&#39;}^T-\mathbf{GF}^T\|_F^2 \quad s.t.\mathbf{G}_{i,k&#39;}\in\{0, 1\},\sum_{k&#39; = 1}^{\mathrm{k}}G_{i,k&#39;}=1,\forall i=1,2,\dots,\mathrm{n}\]</span>   因为kernel方法一般要使用内积的形式，即<span class="math inline">\(k_{i, j}=\phi(\mathbf{X}_i)\phi(\mathbf{X}_j)\)</span>，那我们需要对上面的目标函数进行转化。假设kernel矩阵<span class="math inline">\(\mathbf{K}\)</span>，矩阵的每个元素就是前面给出的<span class="math inline">\(k_{i, j}\)</span>。首先对每个质心点求导，因为这是个二次方程，令导数为<span class="math inline">\(0\)</span>得到取得最小值时的<span class="math inline">\(\mathbf{F}_{k&#39;}\)</span>： <span class="math display">\[\frac{\partial\mathcal{J}}{\partial\mathbf{F}_{k&#39;}}=-2\sum_{i=1}^{\mathrm{n}}\mathbf{G}_{i, k&#39;}[\phi(\mathbf{X}_i)-\mathbf{F}_{k&#39;}]=0\]</span> 即 <span class="math display">\[\mathbf{F}_{k&#39;}=\frac{\sum_{i=1}^{\mathrm{n}}\mathbf{G}_{i, k&#39;}\phi(\mathbf{X}_i)}{\sum_{i=1}^{\mathrm{n}}\mathbf{G}_{i, k&#39;}}\]</span> 如果假设 <span class="math display">\[\mathbf{A}_{i, k&#39;}=\frac{\mathbf{G}_{i, k&#39;}}{\sum_{j=1}^{\mathrm{n}}\mathbf{G}_{j, k&#39;}}\]</span> <span class="math display">\[\mathbf{A}=\begin{bmatrix}
 {\mathbf{A}_{1, 1}}&amp;{\mathbf{A}_{1, 2}}&amp;{\cdots}&amp;{\mathbf{A}_{1, \mathrm{k}}} \\
@@ -259,7 +259,7 @@
        &amp; = \mathop{tr}(\mathbf{K})-\mathop{tr}(\mathbf{L}^{1/2}\mathbf{A}^T\mathbf{KAL}^{1/2}) \\
        &amp; = \mathop{tr}(\mathbf{K})-\mathop{tr}(\mathbf{H}^T\mathbf{KH})
 \end{aligned}\]</span> 其中，<span class="math inline">\(\mathbf{H}\)</span>满足 <span class="math inline">\(\mathbf{H}^T\mathbf{H} = \mathrm{I}\)</span>。因为 <span class="math inline">\(tr(K)\)</span> 是一个常数，则求解的问题可以变为： <span class="math display">\[\max\limits_{\mathbf{H}}\mathop{tr}(\mathbf{H}^T\mathbf{KH})\quad s.t.\mathbf{H}^T\mathbf{H} = \mathrm{I}\]</span> 这里可以用上面Ncut类似的谱分解优化。需要注意的是，其实这里丢弃了<span class="math inline">\(\mathbf{H}\geq 0\)</span>，以及同一列元素相等的条件，只保留了其正交性的限制。关于非负正交矩阵，里面有很多有趣的性质[1]，这里就不详细说明了。</p>
-<p>   下面是用高斯核的kernel k-means的分类结果： <img src="/.io//kernelkmeans.png" alt="kernel kmeans-1"> <img src="/.io//kernelkmeans2.png" alt="kernel kmeans-2"></p>
+<p>   下面是用高斯核的kernel k-means的分类结果： <img src="/2018/05/24/kmeans2ncut/kernelkmeans.png" alt="kernel kmeans-1"> <img src="/2018/05/24/kmeans2ncut/kernelkmeans2.png" alt="kernel kmeans-2"></p>
 <h2 id="k-means和ncut的关系">4.k-means和Ncut的关系</h2>
 <p>   上面可以看到，kernel k-means和Ncut最终求解都可以转化为求解最大特征值的问题，那么k-means和Ncut是不是有某些联系吗？当然是有的。如果在上面的kernel k-means中引入点的权重，即每个点都有它的重要性<span class="math inline">\(\mathop{w}(\mathbf{X}_i)\)</span>，并假设重要性矩阵 <span class="math inline">\(\mathbf{W}\)</span>，其对角线的元素 <span class="math inline">\(\mathbf{W}_{i, i}\)</span> 表示点<span class="math inline">\(\mathbf{X}_i\)</span> 的重要性<span class="math inline">\(\mathop{w}(\mathbf{X}_i)\)</span>，是一个对角矩阵。那么目标方程可以表示为： <span class="math display">\[\min\limits_{\mathbf{G}, \mathbf{F}}\mathcal{J}=\sum_{i=1}^{\mathrm{n}}\sum_{k&#39;=1}^{\mathrm{k}}\mathbf{G}_{i, k&#39;}\mathbf{W}_{i, i}\|\phi(\mathbf{X}_i)-\mathbf{F}_{k&#39;}\|_2^2\]</span> 类似上面的方法，目标方程可以转化为： <span class="math display">\[\mathcal{J} = \mathop{tr}(\mathbf{KW})-\mathop{tr}(\mathbf{A}^T\mathbf{KWG})\]</span> 其中<span class="math inline">\(\mathbf{A}_{i, k&#39;}=\frac{\mathbf{G}_{i, k&#39;}\mathbf{W}_{i, i}}{\sum_{j=1}^{\mathrm{n}}\mathbf{G}_{j, k&#39;}\mathbf{W}_{j, j}}\)</span>。和上面类似，再假设： <span class="math display">\[\mathbf{L}_{k&#39;, k&#39;} = \sum_{i=1}^{\mathrm{n}}\mathbf{G}_{i, k&#39;}\mathbf{W}_{i, i}\]</span> 有<span class="math inline">\(\mathbf{WG} = \mathbf{AL}\)</span>，令<span class="math inline">\(\mathbf{H} = \mathbf{W}^{-1/2}\mathbf{AL}^{1/2}\)</span>，可以证明<span class="math inline">\(\mathbf{H}\)</span>矩阵相当于<span class="math inline">\(\mathbf{A}\)</span>矩阵的每个元素取根号，因此有<span class="math inline">\(\mathbf{H}^T\mathbf{H} = \mathrm{I}\)</span>，可以得到最终求解的目标函数： <span class="math display">\[\max\limits_H\mathop{tr}(\mathbf{H}^T\mathbf{W}^{1/2}\mathbf{KW}^{1/2}\mathbf{H})\quad s.t.\mathbf{H}^T\mathbf{H} = \mathrm{I}\]</span> 对比Ncut的目标函数： <span class="math display">\[\max\limits_F\mathop{tr}(\mathbf{F}^T\mathbf{D}^{-1/2}\mathbf{WD}^{-1/2}\mathbf{F})\quad s.t.\mathbf{F}^T\mathbf{F} = \mathrm{I}\]</span> 如果令<span class="math inline">\(\mathbf{W}_{i, i}=\frac{1}{\sum_{i=1}^{\mathrm{n}}\mathbf{K}_{i, j}}\)</span>，那么上面介绍的weighted kernel k-means就和Ncut求解的目标函数相同了。因此我们可以将Ncut看做利用构图的方法构建kernel矩阵的一种特殊的weighted kernel k-means。</p>
 <h2 id="参考资料">5.参考资料</h2>
@@ -275,8 +275,9 @@
 
       <footer class="post-footer">
           <div class="post-tags">
+              <a href="/tags/%E8%81%9A%E7%B1%BB/" rel="tag"># 聚类</a>
               <a href="/tags/k-means/" rel="tag"># k-means</a>
-              <a href="/tags/%E8%B0%B1%E8%81%9A%E7%B1%BB/" rel="tag"># 谱聚类</a>
+              <a href="/tags/spectral-clustering/" rel="tag"># spectral clustering</a>
           </div>
 
         
@@ -288,8 +289,8 @@
             <span class="post-nav-divider"></span>
 
             <div class="post-nav-prev post-nav-item">
-                <a href="/2019/11/20/hello-world/" rel="prev" title="Hello World">
-                  Hello World <i class="fa fa-chevron-right"></i>
+                <a href="/2019/11/21/PCA/" rel="prev" title="从PCA到概率图模型做Multi-view Outlier Detection">
+                  从PCA到概率图模型做Multi-view Outlier Detection <i class="fa fa-chevron-right"></i>
                 </a>
             </div>
           </div>
@@ -354,7 +355,7 @@
         <span class="site-state-item-name">分类</span>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-count">5</span>
         <span class="site-state-item-name">标签</span>
       </div>
   </nav>
