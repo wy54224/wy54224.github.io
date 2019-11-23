@@ -58,7 +58,7 @@
 <meta property="og:site_name" content="wavy的流动小屋">
 <meta property="og:description" content="Principal Component Analysis(PCA) 问题分析 主成分分析——寻找一个超平面，尽量将所有样本正确表达。">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-11-23T04:22:34.761Z">
+<meta property="og:updated_time" content="2019-11-23T04:32:55.557Z">
 <meta name="twitter:card" content="summary">
 
 <link rel="canonical" href="https://wy54224.github.io/2019/11/21/PCA/">
@@ -205,7 +205,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2019-11-23 12:22:34" itemprop="dateModified" datetime="2019-11-23T12:22:34+08:00">2019-11-23</time>
+                <time title="修改时间：2019-11-23 12:32:55" itemprop="dateModified" datetime="2019-11-23T12:32:55+08:00">2019-11-23</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -411,6 +411,7 @@
 \]</span> 和上面一样，<span class="math inline">\(\mathbf{M}_{old} = \mathbf{W}_{old}^T\mathbf{W}_{old} + \mathbf{\sigma}_{old}^2\mathrm{I}\)</span>。现在对<span class="math inline">\(\mathbf{W}\)</span>和<span class="math inline">\(\mathbf{\sigma}\)</span>最大化：</p>
 <ul>
 <li>对<span class="math inline">\(\mathbf{\sigma}^2\)</span>求导，令导数为<span class="math inline">\(0\)</span>： <span class="math display">\[
+\small
 -\!\sum_{i=1}^{\mathrm{n}}\{\frac{\mathrm{d}}{2\mathbf{\sigma}^2} \!-\! \frac{\|\mathbf{d}_i - \overline{\mathbf{d}}\|_2^2}{2\mathbf{\sigma}^4} \!+\! \frac{\mathbb{E}_{\mathop{q}(\mathbf{Z}; \mathbf{D})}[\mathbf{z}_i]^T\mathbf{W}^T(\mathbf{d}_i - \overline{\mathbf{d}})}{\mathbf{\sigma}^4} \!-\! \frac{\mathop{tr}(\mathbf{W}^T\mathbf{W}\mathbb{E}_{\mathop{q}(\mathbf{Z}; \mathbf{D})}[\mathbf{z}_i\mathbf{z}_i^T])}{2\mathbf{\sigma}^4}\} = 0
 \]</span> 解得： <span class="math display">\[
 \mathbf{\sigma}_{new}^2 = \frac{1}{\mathrm{nd}}\sum_{i=1}^{\mathrm{n}}\{\|\mathbf{d}_i - \overline{\mathbf{d}}\|_2^2 \!-\! 2\mathbb{E}_{\mathop{q}(\mathbf{Z}; \mathbf{D})}[\mathbf{z}_i]^T\mathbf{W}^T(\mathbf{d}_i - \overline{\mathbf{d}}) \!+\! \mathop{tr}(\mathbf{W}^T\mathbf{W}\mathbb{E}_{\mathop{q}(\mathbf{Z}; \mathbf{D})}[\mathbf{z}_i\mathbf{z}_i^T])\}
@@ -418,6 +419,7 @@
 <li>对<span class="math inline">\(\mathbf{W}\)</span>求导，令导数为<span class="math inline">\(0\)</span>： <span class="math display">\[
 \!-\!\sum_{i=1}^{\mathrm{n}}\{\frac{1}{\mathbf{\sigma}^2}\!(\mathbf{d}_i - \mathbf{\mu})\mathbb{E}_{\mathop{q}(\mathbf{Z}; \mathbf{D})}[\mathbf{z}_i]^T \!-\! \frac{1}{\mathbf{\sigma}^2}\!\!\mathbf{W}\mathbb{E}_{\mathop{q}(\mathbf{Z}; \mathbf{D})}[\mathbf{z}_i\mathbf{z}_i^T]\} = 0
 \]</span> 解得： <span class="math display">\[
+\small
 \mathbf{W}_{new} = \{\sum_{i=1}^{\mathrm{n}}(\mathbf{d}_i - \mathbf{\mu})\mathbb{E}_{\mathop{q}(\mathbf{Z}; \mathbf{D})}[\mathbf{z}_i]^T\}\{\sum_{i=1}^{\mathrm{n}}\mathbb{E}_{\mathop{q}(\mathbf{Z}; \mathbf{D})}[\mathbf{z}_i\mathbf{z}_i^T]\}^{-1}
 \]</span> 更新<span class="math inline">\(\mathbf{W}\)</span>和更新<span class="math inline">\(\mathbf{\sigma}\)</span>无关，因此先更新<span class="math inline">\(\mathbf{W}\)</span>，再更新<span class="math inline">\(\mathbf{\sigma}\)</span>。</li>
 </ul></li>
