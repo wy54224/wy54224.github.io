@@ -58,7 +58,7 @@
 <meta property="og:site_name" content="wavy的流动小屋">
 <meta property="og:description" content="Principal Component Analysis(PCA) 问题分析 主成分分析——寻找一个超平面，尽量将所有样本正确表达。">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-11-22T13:15:58.563Z">
+<meta property="og:updated_time" content="2019-11-23T04:22:34.761Z">
 <meta name="twitter:card" content="summary">
 
 <link rel="canonical" href="https://wy54224.github.io/2019/11/21/PCA/">
@@ -205,7 +205,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2019-11-22 21:15:58" itemprop="dateModified" datetime="2019-11-22T21:15:58+08:00">2019-11-22</time>
+                <time title="修改时间：2019-11-23 12:22:34" itemprop="dateModified" datetime="2019-11-23T12:22:34+08:00">2019-11-23</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -376,26 +376,51 @@
 <p>结合前面的后验概率推算的公式，我们就可以直接推出变量在latent space的分布了。</p>
 <h4 id="em算法">EM算法</h4>
 <p>带隐变量的最大似然问题一般都可以往EM算法的角度来考虑（只要后验概率能显式推出来，不然就要用variational inference顺便估计一下后验概率——当然也可以采样）。现在最大似然已经能显示求解，那么用EM算法去逼近最大似然还有什么优势吗？就PPCA来说，可能是一些复杂度上的优势。在一些别的问题上，直接最大似然可能没有解析解（这是很常见的），那么梯度下降或者是坐标上升法去逼近就是很正常的方法了。先拆出ELBO项和KL散度项： <span class="math display">\[
-\log\mathop{p}(\mathbf{d};\mathbf{W}, \mathbf{\mu}, \mathbf{\sigma}) = \int\mathop{q}(\mathbf{z}; \mathbf{d})\log\frac{\mathop{p}(\mathbf{d}, \mathbf{z};\mathbf{W}, \mathbf{\mu}, \mathbf{\sigma})}{\mathop{q}(\mathbf{z}; \mathbf{d})}\,d\mathbf{z} + \mathop{KL}[\mathop{q}(\mathbf{z}; \mathbf{d})\|\mathop{p}(\mathbf{z}|\mathbf{d}; \mathbf{W}, \mathbf{\sigma})]
+\small
+\begin{aligned}
+&amp;\log\mathop{p}(\mathbf{D};\mathbf{W}, \mathbf{\mu}, \mathbf{\sigma})\\
+=&amp; \int\mathop{q}(\mathbf{Z}; \mathbf{D})\log\frac{\mathop{p}(\mathbf{D}, \mathbf{Z};\mathbf{W}, \mathbf{\mu}, \mathbf{\sigma})}{\mathop{q}(\mathbf{Z}; \mathbf{D})}\,d\mathbf{Z} + \mathop{KL}[\mathop{q}(\mathbf{Z}; \mathbf{D})\|\mathop{p}(\mathbf{Z}|\mathbf{D}; \mathbf{W}, \mathbf{\sigma})]\\
+=&amp; \int\mathop{q}(\mathbf{Z}; \mathbf{D})[\sum_{i=1}^{\mathrm{n}}\log\mathop{p}(\mathbf{d}_i, \mathbf{z}_i;\mathbf{W}, \mathbf{\mu}, \mathbf{\sigma}) - \log\mathop{q}(\mathbf{Z}; \mathbf{D})]\,d\mathbf{Z} + \mathop{KL}[\mathop{q}(\mathbf{Z}; \mathbf{D})\|\prod_{i=1}^{\mathrm{n}}\mathop{p}(\mathbf{z}_i|\mathbf{d}_i; \mathbf{W}, \mathbf{\sigma})]
+\end{aligned}
 \]</span> 其中， <span class="math display">\[
 \begin{aligned}
-&amp;\log\mathop{p}(\mathbf{d}, \mathbf{z};\mathbf{W}, \mathbf{\mu}, \mathbf{\sigma})\\
-=&amp;\log\mathop{p}(\mathbf{d}| \mathbf{z};\mathbf{W}, \mathbf{\mu}, \mathbf{\sigma}) + \log\mathop{p}(\mathbf{z})\\
-=&amp;-\frac{\mathrm{d}}{2}\log(2\pi\mathbf{\sigma}^2) - \frac{1}{2\mathbf{\sigma}^2}\|\mathbf{d} - \mathbf{Wz} - \mathbf{\mu}\|_2^2 -\frac{\mathrm{r}}{2}\log(2\pi) -  \frac{1}{2}\mathbf{z}^T\mathbf{z}
+&amp;\log\mathop{p}(\mathbf{d}_i, \mathbf{z}_i;\mathbf{W}, \mathbf{\mu}, \mathbf{\sigma})\\
+=&amp;\log\mathop{p}(\mathbf{d}_i| \mathbf{z}_i;\mathbf{W}, \mathbf{\mu}, \mathbf{\sigma}) + \log\mathop{p}(\mathbf{z}_i)\\
+=&amp;-\frac{\mathrm{d}}{2}\log(2\pi\mathbf{\sigma}^2) - \frac{1}{2\mathbf{\sigma}^2}\|\mathbf{d} - \mathbf{W}\mathbf{z}_i - \mathbf{\mu}\|_2^2 -\frac{\mathrm{r}}{2}\log(2\pi) -  \frac{1}{2}\mathbf{z}_i^T\mathbf{z}_i
 \end{aligned}
 \]</span></p>
 <ul>
-<li>E步，将<span class="math inline">\(\mathop{q}(\mathbf{z}; \mathbf{d})\)</span>用当前的<span class="math inline">\(\mathop{p}(\mathbf{z}|\mathbf{d}; \mathbf{W}_{old}, \mathbf{\sigma}_{old})\)</span>代替。具体而言，我们前面已经计算出对于每个点的后验概率为 <span class="math display">\[
+<li><p>E步，将<span class="math inline">\(\mathop{q}(\mathbf{Z}; \mathbf{D})\)</span>用当前的<span class="math inline">\(\prod_{i=1}^{\mathrm{n}}\mathop{p}(\mathbf{z}_i|\mathbf{d}_i; \mathbf{W}_{old}, \mathbf{\sigma}_{old})\)</span>代替。具体而言，我们前面已经计算出对于每个点的后验概率为 <span class="math display">\[
 \mathop{p}(\mathbf{z}|\mathbf{d})\sim\mathcal{N}(\mathbf{M}^{-1}\mathbf{W}^T(\mathbf{d} - \mathbf{\mu}), \mathbf{\sigma}^2\mathbf{M}^{-1})
-\]</span> 直接带入即可。</li>
-<li>M步，最大化ELBO项： <span class="math display">\[
+\]</span> 直接带入即可。</p></li>
+<li><p>M步，最大化ELBO项： <span class="math display">\[
+\scriptsize
 \begin{aligned}
-&amp;\int\mathop{q}(\mathbf{z}; \mathbf{d})\log\frac{\mathop{p}(\mathbf{d}, \mathbf{z};\mathbf{W}, \mathbf{\mu}, \mathbf{\sigma})}{\mathop{q}(\mathbf{z}; \mathbf{d})}\,d\mathbf{z}\\
-=&amp;\mathbb{E}_{\mathop{q}(\mathbf{z}; \mathbf{d})}-[\frac{\mathrm{d}}{2}\log(2\pi\mathbf{\sigma}^2) + \frac{1}{2\mathbf{\sigma}^2}\|\mathbf{d} - \mathbf{Wz} - \mathbf{\mu}\|_2^2 +\frac{\mathrm{r}}{2}\log(2\pi) + \frac{1}{2}\mathbf{z}^T\mathbf{z} + \log\mathop{q}(\mathbf{z}; \mathbf{d})]\\
-\sim&amp;\mathbb{E}_{\mathop{q}(\mathbf{z}; \mathbf{d})}-[\frac{\mathrm{d}}{2}\log(2\pi\mathbf{\sigma}^2) + \frac{1}{2\mathbf{\sigma}^2}\|\mathbf{d} - \mathbf{\mu}\|_2^2 + \frac{1}{2\mathbf{\sigma}^2}\mathbf{z}^T\mathbf{W}^T(\mathbf{d} - \mathbf{\mu}) + \frac{1}{2\mathbf{\sigma}^2}\mathop{\mathbf{W}^T\mathbf{W}\mathbf{z}\mathbf{z}^T} +\frac{\mathrm{r}}{2}\log(2\pi) + \frac{1}{2}\mathop{tr}(\mathbf{z}\mathbf{z}^T)]\\
-=&amp;-\{\frac{\mathrm{d}}{2}\log(2\pi\mathbf{\sigma}^2) + \frac{1}{2\mathbf{\sigma}^2}\|\mathbf{d} - \mathbf{\mu}\|_2^2 + \frac{1}{2\mathbf{\sigma}^2}\mathbb{E}_{\mathop{q}(\mathbf{z}; \mathbf{d})}[\mathbf{z}]^T\mathbf{W}^T(\mathbf{d} - \mathbf{\mu}) + \frac{1}{2\mathbf{\sigma}^2}\mathop{\mathbf{W}^T\mathbf{W}\mathbb{E}_{\mathop{q}(\mathbf{z}; \mathbf{d})}[\mathbf{z}\mathbf{z}^T]} +\frac{\mathrm{r}}{2}\log(2\pi) + \frac{1}{2}\mathop{tr}(\mathbb{E}_{\mathop{q}(\mathbf{z}; \mathbf{d})}[\mathbf{z}\mathbf{z}^T])\}
+&amp;\int\mathop{q}(\mathbf{Z}; \mathbf{D})[\sum_{i=1}^{\mathrm{n}}\log\mathop{p}(\mathbf{d}_i, \mathbf{z}_i;\mathbf{W}, \mathbf{\mu}, \mathbf{\sigma}) - \log\mathop{q}(\mathbf{Z}; \mathbf{D})]\,d\mathbf{Z}\\
+\sim&amp;\mathbb{E}_{\mathop{q}(\mathbf{Z}; \mathbf{D})}-\sum_{i=1}^{\mathrm{n}}[\frac{\mathrm{d}}{2}\log(2\pi\mathbf{\sigma}^2) + \frac{1}{2\mathbf{\sigma}^2}\|\mathbf{d}_i - \mathbf{W}\mathbf{z}_i - \mathbf{\mu}\|_2^2 +\frac{\mathrm{r}}{2}\log(2\pi) + \frac{1}{2}\mathbf{z}_i^T\mathbf{z}_i]\\
+=&amp;\mathbb{E}_{\mathop{q}(\mathbf{Z}; \mathbf{D})}-\sum_{i=1}^{\mathrm{n}}[\frac{\mathrm{d}}{2}\log(2\pi\mathbf{\sigma}^2) + \frac{1}{2\mathbf{\sigma}^2}\|\mathbf{d}_i - \mathbf{\mu}\|_2^2 - \frac{1}{\mathbf{\sigma}^2}\mathbf{z}_i^T\mathbf{W}^T(\mathbf{d}_i - \mathbf{\mu}) + \frac{1}{2\mathbf{\sigma}^2}\mathop{tr}(\mathbf{W}^T\mathbf{W}\mathbf{z}_i\mathbf{z}_i^T) +\frac{\mathrm{r}}{2}\log(2\pi) + \frac{1}{2}\mathop{tr}(\mathbf{z}_i\mathbf{z}_i^T)]\\
+=&amp;\!-\!\sum_{i=1}^{\mathrm{n}}\{\frac{\mathrm{d}}{2}\!\log( \mathbf{\sigma}^2) \!+\! \frac{1}{2\mathbf{\sigma}^2}\!\|\mathbf{d}_i - \mathbf{\mu}\|_2^2 \!-\! \frac{1}{\mathbf{\sigma}^2}\!\mathbb{E}_{\mathop{q}(\mathbf{Z}; \mathbf{D})}[\mathbf{z}_i]^T\mathbf{W}^T(\mathbf{d}_i - \mathbf{\mu}) \!+\! \frac{1}{2\mathbf{\sigma}^2}\!\!\mathop{tr}(\mathbf{W}^T\mathbf{W}\mathbb{E}_{\mathop{q}(\mathbf{Z}; \mathbf{D})}[\mathbf{z}_i\mathbf{z}_i^T]) \!+\! \frac{1}{2}\mathop{tr}(\mathbb{E}_{\mathop{q}(\mathbf{Z}; \mathbf{D})}[\mathbf{z}_i\mathbf{z}_i^T])\}
 \end{aligned}
+\]</span> 对应的均值和方差期望可以直接求解出来： <span class="math display">\[
+\mathbb{E}_{\mathop{q}(\mathbf{Z}; \mathbf{D})}[\mathbf{z}_i] = \mathbf{M}_{old}^{-1}\mathbf{W}_{old}^T(\mathbf{d}_i - \overline{\mathbf{d}})
+\]</span> <span class="math display">\[
+\begin{aligned}
+\mathbb{E}_{\mathop{q}(\mathbf{Z}; \mathbf{D})}[\mathbf{z}_i\mathbf{z}_i^T] &amp;= \mathop{cov}[\mathbf{z}_i] + \mathbb{E}_{\mathop{q}(\mathbf{Z}; \mathbf{D})}[\mathbf{z}_i]\mathbb{E}_{\mathop{q}(\mathbf{Z}; \mathbf{D})}[\mathbf{z}_i]^T\\
+&amp;= \mathbf{\sigma}_{old}^2\mathbf{M}_{old}^{-1} + \mathbf{M}_{old}^{-1}\mathbf{W}_{old}^T(\mathbf{d}_i - \overline{\mathbf{d}})(\mathbf{d}_i - \overline{\mathbf{d}})^T\mathbf{W}_{old}\mathbf{M}_{old}^{-1}
+\end{aligned}
+\]</span> 和上面一样，<span class="math inline">\(\mathbf{M}_{old} = \mathbf{W}_{old}^T\mathbf{W}_{old} + \mathbf{\sigma}_{old}^2\mathrm{I}\)</span>。现在对<span class="math inline">\(\mathbf{W}\)</span>和<span class="math inline">\(\mathbf{\sigma}\)</span>最大化：</p>
+<ul>
+<li>对<span class="math inline">\(\mathbf{\sigma}^2\)</span>求导，令导数为<span class="math inline">\(0\)</span>： <span class="math display">\[
+-\!\sum_{i=1}^{\mathrm{n}}\{\frac{\mathrm{d}}{2\mathbf{\sigma}^2} \!-\! \frac{\|\mathbf{d}_i - \overline{\mathbf{d}}\|_2^2}{2\mathbf{\sigma}^4} \!+\! \frac{\mathbb{E}_{\mathop{q}(\mathbf{Z}; \mathbf{D})}[\mathbf{z}_i]^T\mathbf{W}^T(\mathbf{d}_i - \overline{\mathbf{d}})}{\mathbf{\sigma}^4} \!-\! \frac{\mathop{tr}(\mathbf{W}^T\mathbf{W}\mathbb{E}_{\mathop{q}(\mathbf{Z}; \mathbf{D})}[\mathbf{z}_i\mathbf{z}_i^T])}{2\mathbf{\sigma}^4}\} = 0
+\]</span> 解得： <span class="math display">\[
+\mathbf{\sigma}_{new}^2 = \frac{1}{\mathrm{nd}}\sum_{i=1}^{\mathrm{n}}\{\|\mathbf{d}_i - \overline{\mathbf{d}}\|_2^2 \!-\! 2\mathbb{E}_{\mathop{q}(\mathbf{Z}; \mathbf{D})}[\mathbf{z}_i]^T\mathbf{W}^T(\mathbf{d}_i - \overline{\mathbf{d}}) \!+\! \mathop{tr}(\mathbf{W}^T\mathbf{W}\mathbb{E}_{\mathop{q}(\mathbf{Z}; \mathbf{D})}[\mathbf{z}_i\mathbf{z}_i^T])\}
 \]</span></li>
+<li>对<span class="math inline">\(\mathbf{W}\)</span>求导，令导数为<span class="math inline">\(0\)</span>： <span class="math display">\[
+\!-\!\sum_{i=1}^{\mathrm{n}}\{\frac{1}{\mathbf{\sigma}^2}\!(\mathbf{d}_i - \mathbf{\mu})\mathbb{E}_{\mathop{q}(\mathbf{Z}; \mathbf{D})}[\mathbf{z}_i]^T \!-\! \frac{1}{\mathbf{\sigma}^2}\!\!\mathbf{W}\mathbb{E}_{\mathop{q}(\mathbf{Z}; \mathbf{D})}[\mathbf{z}_i\mathbf{z}_i^T]\} = 0
+\]</span> 解得： <span class="math display">\[
+\mathbf{W}_{new} = \{\sum_{i=1}^{\mathrm{n}}(\mathbf{d}_i - \mathbf{\mu})\mathbb{E}_{\mathop{q}(\mathbf{Z}; \mathbf{D})}[\mathbf{z}_i]^T\}\{\sum_{i=1}^{\mathrm{n}}\mathbb{E}_{\mathop{q}(\mathbf{Z}; \mathbf{D})}[\mathbf{z}_i\mathbf{z}_i^T]\}^{-1}
+\]</span> 更新<span class="math inline">\(\mathbf{W}\)</span>和更新<span class="math inline">\(\mathbf{\sigma}\)</span>无关，因此先更新<span class="math inline">\(\mathbf{W}\)</span>，再更新<span class="math inline">\(\mathbf{\sigma}\)</span>。</li>
+</ul></li>
 </ul>
 <h2 id="引用文献">引用文献</h2>
 <p>[1] Lin Z, Chen M, Ma Y. The augmented lagrange multiplier method for exact recovery of corrupted low-rank matrices[J]. arXiv preprint arXiv:1009.5055, 2010.</p>
